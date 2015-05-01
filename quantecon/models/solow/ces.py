@@ -10,7 +10,7 @@ from textwrap import dedent
 
 import sympy as sym
 
-from . import model
+from .model import Model
 
 # declare key variables for the model
 A, k, K, L, Y = sym.symbols('A, k, K, L, Y')
@@ -19,7 +19,7 @@ A, k, K, L, Y = sym.symbols('A, k, K, L, Y')
 g, n, s, alpha, delta, sigma = sym.symbols('g, n, s, alpha, delta, sigma')
 
 
-class CESModel(model.Model):
+class CESModel(Model):
 
     _required_params = ['g', 'n', 's', 'alpha', 'delta', 'sigma', 'A0', 'L0']
 

@@ -86,8 +86,8 @@ import numpy as np
 from scipy import optimize
 import sympy as sym
 
-from ... import ivp
-from . import impulse_response
+from ...ivp import IVP
+from .impulse_response import ImpulseResponse
 
 # declare key variables for the model
 t, X = sym.symbols('t'), sym.DeferredVector('X')
@@ -126,7 +126,7 @@ class Model(object):
             Dictionary of model parameters.
 
         """
-        self.irf = impulse_response.ImpulseResponse(self)
+        self.irf = ImpulseResponse(self)
         self.output = output
         self.params = params
 
@@ -352,7 +352,7 @@ class Model(object):
         the time path of capital stock (per unit effective labor).
 
         """
-        tmp_ivp = ivp.IVP(self._numeric_system, self._numeric_jacobian)
+        tmp_ivp = IVP(self._numeric_system, self._numeric_jacobian)
         tmp_ivp.f_params = tuple(self.params.values())
         tmp_ivp.jac_params = tuple(self.params.values())
         return tmp_ivp

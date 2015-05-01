@@ -2,7 +2,6 @@
 Import the main names to top level.
 """
 
-from . import models as models
 from .compute_fp import compute_fixed_point
 from .cartesian import cartesian, mlinspace
 from .discrete_rv import DiscreteRV
@@ -22,7 +21,7 @@ from .quadsums import var_quadratic_sum, m_quadratic_sum
 from .rank_nullspace import rank_est, nullspace
 from .robustlq import RBLQ
 from .tauchen import approx_markov
-from . import quad as quad
+from .ivp import IVP
 
 #Add Version Attribute
 from .version import version as __version__

@@ -11,7 +11,7 @@ from textwrap import dedent
 import numpy as np
 import sympy as sym
 
-from . import model
+from .model import Model
 
 # declare key variables for the model
 t, X = sym.symbols('t'), sym.DeferredVector('X')
@@ -21,7 +21,7 @@ A, k, K, L = sym.symbols('A, k, K, L')
 g, n, s, alpha, delta = sym.symbols('g, n, s, alpha, delta')
 
 
-class CobbDouglasModel(model.Model):
+class CobbDouglasModel(Model):
 
     _required_params = ['g', 'n', 's', 'alpha', 'delta', 'A0', 'L0']
 
