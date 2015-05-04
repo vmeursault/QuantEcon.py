@@ -8,15 +8,16 @@ Solow model with constant elasticity of substitution (CES) production.
 from __future__ import division
 from textwrap import dedent
 
-import sympy as sym
+# import sympy as sym
+from sympy import symbols
 
 from .model import Model
 
 # declare key variables for the model
-A, k, K, L, Y = sym.symbols('A, k, K, L, Y')
+A, k, K, L, Y = symbols('A, k, K, L, Y')
 
 # declare required model parameters
-g, n, s, alpha, delta, sigma = sym.symbols('g, n, s, alpha, delta, sigma')
+g, n, s, alpha, delta, sigma = symbols('g, n, s, alpha, delta, sigma')
 
 
 class CESModel(Model):

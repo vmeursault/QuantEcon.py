@@ -35,9 +35,6 @@ if on_rtd:
         @classmethod
         def __getattr__(cls, name):
             return Mock()
-        @classmethod
-        def __iter__(cls, name):
-        	return Mock()
 
     MOCK_MODULES = ['pandas', 'statsmodels', 'sympy', "sympy.mpmath", 'numba']
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)

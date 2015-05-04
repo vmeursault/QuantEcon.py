@@ -9,16 +9,17 @@ from __future__ import division
 from textwrap import dedent
 
 import numpy as np
-import sympy as sym
+# import sympy as sym
+from sympy import symbols, DeferredVector
 
 from .model import Model
 
 # declare key variables for the model
-t, X = sym.symbols('t'), sym.DeferredVector('X')
-A, k, K, L = sym.symbols('A, k, K, L')
+t, X = symbols('t'), DeferredVector('X')
+A, k, K, L = symbols('A, k, K, L')
 
 # declare required model parameters
-g, n, s, alpha, delta = sym.symbols('g, n, s, alpha, delta')
+g, n, s, alpha, delta = symbols('g, n, s, alpha, delta')
 
 
 class CobbDouglasModel(Model):
