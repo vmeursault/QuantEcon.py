@@ -15,3 +15,5 @@ matplotlib
 sympy
 
 numba
+
+pandas
