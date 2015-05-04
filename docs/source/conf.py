@@ -16,7 +16,14 @@ import sys
 import os
 import pip
 
-from unittest.mock import MagicMock
+try:
+    from mock import Mock as MagicMock
+except ImportError:
+    def install(package):
+        pip.main(['install', package])
+
+    install('mock')
+    from mock import Mock as MagicMock
 
 # ------------------------------------------------------------------- #
 # MOCK MODULES
@@ -28,6 +35,9 @@ if on_rtd:
         @classmethod
         def __getattr__(cls, name):
             return Mock()
+        @classmethod
+        def __iter__(cls, name):
+        	return Mock()
 
     MOCK_MODULES = ['pandas', 'statsmodels', 'sympy', "sympy.mpmath", 'numba']
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
