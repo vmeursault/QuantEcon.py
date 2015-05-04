@@ -85,17 +85,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
 import sympy as sym
-from sympy import symbols, DeferredVector
 
 from ...ivp import IVP
 from .impulse_response import ImpulseResponse
 
 # declare key variables for the model
-t, X = symbols('t'), DeferredVector('X')
-A, k, K, L, Y = symbols('A, k, K, L, Y')
+t, X = sym.symbols('t'), sym.DeferredVector('X')
+A, k, K, L, Y = sym.symbols('A, k, K, L, Y')
 
 # declare required model parameters
-g, n, s, delta = symbols('g, n, s, delta')
+g, n, s, delta = sym.symbols('g, n, s, delta')
 
 
 class Model(object):
