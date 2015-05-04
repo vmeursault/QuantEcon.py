@@ -16,14 +16,7 @@ import sys
 import os
 import pip
 
-try:
-    from mock import MagicMock
-except ImportError:
-    def install(package):
-        pip.main(['install', package])
-
-    install('mock')
-    from mock import MagicMock
+from unittest.mock import MagicMock
 
 # ------------------------------------------------------------------- #
 # MOCK MODULES
