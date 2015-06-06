@@ -267,7 +267,7 @@ class MarkovChain(object):
             self._cdfs = cdfs
         return self._cdfs
 
-    def simulate(self, ts_length, init=None):
+    def simulate(self, ts_length, init=None, num_reps=None):
         """
         Simulate a time series of the state transition of length
         ts_length.
@@ -275,72 +275,54 @@ class MarkovChain(object):
         Parameters
         ----------
         ts_length : scalar(int)
-            Length of the simulation.
+            Length of each simulation.
 
-        init : scalar(int), optional(default=None)
-            Initial state. If None, the initial state is randomly drawn.
-
-        Returns
-        -------
-        X : ndarray(int, ndim=1)
-            Array containing the sample path.
-
-        """
-        if init is None:
-            init = np.random.randint(self.n)
-        elif not isinstance(init, int):
-            raise ValueError('init must be int or None')
-        X = _simulate_markov_chain(self.cdfs, ts_length, init)
-        return X
-
-    def replicate(self, T, num_reps, init=None):
-        """
-        Simulate num_reps observations of the state at time T.
-
-        Parameters
-        ----------
-        T : scalar(int)
-            Time period of the observation.
-
-        num_reps : scalar(int)
-            Number of replication.
-
-        init : array_like(int, ndim=1) or scalar(int),
+        init : scalar(int) or array_like(int, ndim=1),
                optional(default=None)
-            Specifies the initial state for each simulation. If it is an
-            array_like, its length must be equal to num_reps. If it is
-            None, the initial state is randomly drawn for each
-            simulation.
+            Initial state(s). If None, the initial state is randomly
+            drawn.
+
+        num_reps : scalar(int), optional(default=None)
+            Number of simulations. Relevant only when init is a scalar
+            or None.
 
         Returns
         -------
-        X_Ts : ndarray(int, ndim=1)
-            Array containing the num_reps observations of the state at
-            time T.
+        X : ndarray(int, ndim=1 or 2)
+            Array containing the sample path(s), of shape (ts_length,)
+            if init is a scalar (integer) or None and num_reps is None;
+            of shape (k, ts_length) otherwise, where k = len(init) if
+            init is an array_like, otherwise k = num_reps.
 
         """
-        if init is None:
-            init_states = np.random.randint(self.n, size=num_reps)
-        elif isinstance(init, int):
-            init_states = np.ones(num_reps, dtype=int) * init
+        try:
+            num_reps = len(init)  # init is an array; make num_reps not None
+            init_states = np.asarray(init, dtype=int)
+        except:  # init is a scalar(int) or None
+            k = 1 if num_reps is None else num_reps
+            if init is None:
+                init_states = np.random.randint(self.n, size=k)
+            elif isinstance(init, int):
+                init_states = np.ones(k, dtype=int) * init
+            else:
+                raise ValueError(
+                    'init must be int, array_like of ints, or None'
+                )
+
+        X = _simulate_markov_chain(self.cdfs, ts_length, init_states,
+                                   random_state=np.random.RandomState())
+
+        if num_reps is None:
+            return X[0]
         else:
-            msg = 'init must be int, array_like of length equal to ' + \
-                'equal to num_reps, or None'
-            try:
-                if len(init) == num_reps:
-                    init_states = np.asarray(init)
-                else:
-                    raise ValueError(msg)
-            except:
-                raise ValueError(msg)
-
-        X_Ts = _replicate_markov_chain(self.cdfs, T, num_reps, init_states)
-        return X_Ts
+            return X
 
 
-def _simulate_markov_chain(P_cdfs, ts_length, init):
+def _simulate_markov_chain(P_cdfs, ts_length, init_states, random_state):
     """
     Main body of MarkovChain.simulate.
+
+    Generate len(init_states) sample paths of length ts_length.
 
     Parameters
     ----------
@@ -348,78 +330,42 @@ def _simulate_markov_chain(P_cdfs, ts_length, init):
         Array containing as rows the CDFs of the state transition.
 
     ts_length : scalar(int)
-        Length of the simulation.
+        Length of each sample path.
 
-    init : scalar(int)
-        Initial state.
+    init_states : array_like(int, ndim=1)
+        Array containing the initial states.
+
+    random_state : np.random.RandomState
 
     Returns
     -------
-    X : ndarray(int, ndim=1)
-        Array containing the sample path.
+    X : ndarray(int, ndim=2)
+        Array containing the sample paths, of shape (len(init_states),
+        ts_length)
 
     Notes
     -----
     This routine is jit-complied if the module Numba is vailable.
 
     """
+    num_reps = len(init_states)
+
     # === set up array to store output === #
-    X = np.empty(ts_length, dtype=int)
-    X[0] = init
+    X = np.empty((num_reps, ts_length), dtype=int)
+    X[:, 0] = init_states
 
     # Random values, uniformly sampled from [0, 1)
-    u = np.random.random(size=ts_length-1)
+    u = random_state.random_sample(size=(num_reps, ts_length-1))
 
-    # === generate the sample path === #
-    for t in range(ts_length-1):
-        X[t+1] = searchsorted(P_cdfs[X[t]], u[t])
+    # === generate the sample paths === #
+    for i in range(num_reps):
+        for t in range(ts_length-1):
+            X[i, t+1] = searchsorted(P_cdfs[X[i, t]], u[i, t])
 
     return X
 
 if numba_installed:
     _simulate_markov_chain = jit(_simulate_markov_chain)
-
-
-def _replicate_markov_chain(P_cdfs, T, num_reps, init_states):
-    """
-    Main body of MarkovChain.replicate.
-
-    Parameters
-    ----------
-    P_cdfs : ndarray(float, ndim=2)
-        Array containing as rows the CDFs of the state transition.
-
-    num_reps : scalar(int)
-        Number of replication.
-
-    init : ndarray(int, ndim=1)
-        Array of length num_reps containing the initial states.
-
-    Returns
-    -------
-    out : ndarray(int, ndim=1)
-        Array containing the num_reps observations of the state at
-        time T.
-
-    Notes
-    -----
-    This routine is jit-complied if the module Numba is vailable.
-
-    """
-    out = np.empty(num_reps, dtype=int)
-
-    for i in range(num_reps):
-        u = np.random.random(size=T)
-        x_current = init_states[i]
-        for t in range(T):
-            x_next = searchsorted(P_cdfs[x_current], u[t])
-            x_current = x_next
-        out[i] = x_current
-
-    return out
-
-if numba_installed:
-    _replicate_markov_chain = jit(_replicate_markov_chain)
 
 
 def mc_compute_stationary(P):
