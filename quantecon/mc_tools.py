@@ -141,11 +141,6 @@ class MarkovChain(object):
         List of numpy arrays containing the cyclic classes. Defined only
         when the Markov chain is irreducible.
 
-    Methods
-    -------
-    simulate : Simulates the markov chain for a given initial state or
-        distribution.
-
     """
 
     def __init__(self, P):
@@ -275,8 +270,7 @@ class MarkovChain(object):
 
     def simulate(self, ts_length, init=None, num_reps=None):
         """
-        Simulate a time series of the state transition of length
-        ts_length.
+        Simulate time series of state transitions.
 
         Parameters
         ----------
@@ -391,7 +385,27 @@ def mc_compute_stationary(P):
 
 def mc_sample_path(P, init=0, sample_size=1000):
     """
-    See Section: DocStrings below
+    Generates one sample path from the Markov chain represented by
+    (n x n) transition matrix P on state space S = {{0,...,n-1}}.
+
+    Parameters
+    ----------
+    P : array_like(float, ndim=2)
+        A Markov transition matrix.
+
+    init : array_like(float ndim=1) or scalar(int), optional(default=0)
+        If init is an array_like, then it is treated as the initial
+        distribution across states.  If init is a scalar, then it
+        treated as the deterministic initial state.
+
+    sample_size : scalar(int), optional(default=1000)
+        The length of the sample path.
+
+    Returns
+    -------
+    X : array_like(int, ndim=1)
+        The simulation of states.
+
     """
     if isinstance(init, int):
         X_0 = init
@@ -401,49 +415,3 @@ def mc_sample_path(P, init=0, sample_size=1000):
         X_0 = searchsorted(cdf0, u_0)
 
     return MarkovChain(P).simulate(ts_length=sample_size, init=X_0)
-
-
-# ------------ #
-# -DocStrings- #
-# ------------ #
-
-# -mc_sample_path() function and MarkovChain.simulate() method- #
-_sample_path_docstr = \
-"""
-Generates one sample path from the Markov chain represented by (n x n)
-transition matrix P on state space S = {{0,...,n-1}}.
-
-Parameters
-----------
-{p_arg}
-init : array_like(float ndim=1) or scalar(int), optional(default=0)
-    If init is an array_like, then it is treated as the initial
-    distribution across states.  If init is a scalar, then it treated as
-    the deterministic initial state.
-
-sample_size : scalar(int), optional(default=1000)
-    The length of the sample path.
-
-Returns
--------
-X : array_like(int, ndim=1)
-    The simulation of states.
-
-"""
-
-# -Functions- #
-
-# -mc_sample_path- #
-mc_sample_path.__doc__ = _sample_path_docstr.format(p_arg="""
-P : array_like(float, ndim=2)
-    A Markov transition matrix.
-""")
-
-# -Methods- #
-
-# -Markovchain.simulate()- #
-# if sys.version_info[0] == 3:
-#     MarkovChain.simulate.__doc__ = _sample_path_docstr.format(p_arg="")
-# elif sys.version_info[0] == 2:
-#     MarkovChain.simulate.__func__.__doc__ = \
-#         _sample_path_docstr.format(p_arg="")
